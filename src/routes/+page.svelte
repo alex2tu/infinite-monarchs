@@ -1,12 +1,10 @@
 <script lang="ts">
-  export let n = 8; // Default grid size
+  export let n = 5; // Default grid size
 
   type CellContent = [string, string]; // [content, colorCode]
 
   // Generate grid data
-  let grid = Array(n).fill(null).map(() => 
-    Array(n).fill(null).map(() => [" ", "white"] as CellContent)
-    );
+  let grid;
 
     // console.log(grid);
 
@@ -55,11 +53,8 @@
     return result;
   }
 
-  let validConfigurations = findValidConfigurations(n);
-
-//   console.log(validConfigurations);
-
     function chooseConfiguration() {
+        let validConfigurations = findValidConfigurations(n);
         let randomIndex = Math.floor(Math.random() * validConfigurations.length);
         return validConfigurations[randomIndex];
     }
@@ -81,25 +76,17 @@
 
     function setColors() {
         let currGrid = chooseConfiguration();
-        // console.log(currGrid);
         let currColorIndex = 0;
         for (let i = 0; i < n; i++) {
             for (let j = 0; j < n; j++) {
                 if (currGrid[i][j] === "Q") {
                     currAvailableSquares--;
-                    // console.log("Queen at " + i + " " + j);
-                    // console.log("Color: " + colors[currColorIndex]);
-                    // console.log(grid);
-                    // console.log(grid[i][j]);
                     grid[i][j] = ["Q", colors[currColorIndex]];
-                    // console.log(grid[i][j]);
                     currColorIndex++;
                 }
             }
         }
     }
-
-    setColors();
 
     let directions = [
                 [-1, 0],
@@ -107,18 +94,6 @@
                 [0, -1],
                 [0, 1]
     ];
-
-    for(let i = 0; i < n; i++) {
-        for(let j = 0; j < n; j++) {
-            if (grid[i][j][0] === "Q") {
-                // console.log(grid[i][j]);
-                let stack = [[i, j]];
-                let walkLength = Math.floor(Math.random() * (currAvailableSquares / (n-1))) + 1;
-                // console.log(walkLength);
-                drunkardsWalk(i, j, walkLength, grid[i][j][1], stack);
-            }
-        }
-    }
 
     function drunkardsWalk(row, col, steps, color, stack) {
         if (steps === 0) {
@@ -167,39 +142,6 @@
             }
         }
         return false;
-    }
-    console.log("hello");
-
-    //assign colors to all the remaining squares
-    while (currAvailableSquares > 0) {
-        for (let i = 0; i < n; i++) {
-            for (let j = 0; j < n; j++) {
-                if (grid[i][j][1] === "white") {
-                    for (let k = 0; k < 4; k++) {
-                        let [dx, dy] = directions[Math.floor(Math.random() * 4)];
-                        let newX = i + dx;
-                        let newY = j + dy;
-                        if (newX < 0 || newX > n-1 || newY < 0 || newY > n-1) {
-                            continue;
-                        }
-                        if (grid[newX][newY][1] !== "white") {
-                            grid[i][j][1] = grid[newX][newY][1];
-                            currAvailableSquares--;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    //get rid of queens
-    for (let i = 0; i < n; i++) {
-        for (let j = 0; j < n; j++) {
-            if (grid[i][j][0] === "Q") {
-                grid[i][j][0] = " ";
-            }
-        }
     }
 
   let cellVals = [" ", "X", "Q"];
@@ -274,12 +216,58 @@
     if (numQueens >= n) {
         if (checkWin()) {
             console.log("You win!");
-        }
-        else {
-            console.log("You lose!");
+            setTimeout(() => {
+                alert("You win!");
+            }, 200);
         }
     }
   }
+
+  function generateNewBoard() {
+    grid = Array(n).fill(null).map(() => 
+      Array(n).fill(null).map(() => [" ", "white"] as CellContent)
+    );
+    let configuration = chooseConfiguration();
+    setColors();
+    numQueens = 0;
+
+    //perform drunkard's walk on all queen squares
+    for(let i = 0; i < n; i++) {
+        for(let j = 0; j < n; j++) {
+            if (grid[i][j][0] === "Q") {
+                let stack = [[i, j]];
+                let walkLength = Math.floor(Math.random() * (currAvailableSquares / (n-2))) + 1;
+                drunkardsWalk(i, j, walkLength, grid[i][j][1], stack);
+                grid[i][j][0] = " ";
+            }
+        }
+    }
+
+    //fill in remaining squares
+    while (currAvailableSquares > 0) {
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n; j++) {
+                if (grid[i][j][1] === "white") {
+                    for (let k = 0; k < 4; k++) {
+                        let [dx, dy] = directions[Math.floor(Math.random() * 4)];
+                        let newX = i + dx;
+                        let newY = j + dy;
+                        if (newX < 0 || newX > n-1 || newY < 0 || newY > n-1) {
+                            continue;
+                        }
+                        if (grid[newX][newY][1] !== "white") {
+                            grid[i][j][1] = grid[newX][newY][1];
+                            currAvailableSquares--;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+  }
+
+  generateNewBoard();
 //   console.log(grid);
 </script>
 
@@ -291,9 +279,21 @@
         on:click={() => handleClick(i, j)}
         style="background-color: {color}">
         {#if content === "X"}
-          x
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10.875 4.25L8 7.125L5.125 4.25L4.25 5.125L7.125 8L4.25 10.875L5.125 11.75L8 8.875L10.875 11.75L11.75 10.875L8.875 8L11.75 5.125L10.875 4.25Z" fill="black" fill-opacity="0.75"></path>
+          </svg>
         {:else if content === "Q"}
-          <img src="src/img/queen.png" class="queen-image">
+            <svg class="queens-icon-svg queens-card-queen" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <title>Queen</title>
+            <g clip-path="url(#clip0_3812_70403)">
+              <path d="M23.25 7C23.25 7.69 22.69 8.25 22 8.25C21.89 8.25 21.78 8.21 21.68 8.18L19 17.99H5L2.32 8.18C2.21 8.21 2.11 8.25 2 8.25C1.31 8.25 0.75 7.69 0.75 7C0.75 6.31 1.31 5.75 2 5.75C2.69 5.75 3.25 6.31 3.25 7C3.25 7.31 3.13 7.59 2.94 7.8L9 13L11.65 4.18C11.14 4.03 10.75 3.57 10.75 3C10.75 2.31 11.31 1.75 12 1.75C12.69 1.75 13.25 2.31 13.25 3C13.25 3.56 12.87 4.02 12.35 4.18L15 13L21.06 7.8C20.87 7.58 20.75 7.31 20.75 7C20.75 6.31 21.31 5.75 22 5.75C22.69 5.75 23.25 6.31 23.25 7ZM19 19H5C4.45 19 4 19.45 4 20C4 20.55 4.45 21 5 21H19C19.55 21 20 20.55 20 20C20 19.45 19.55 19 19 19Z"></path>
+            </g>
+            <defs>
+              <clipPath id="clip0_3812_70403">
+                <rect width="24" height="24" fill="white"></rect>
+              </clipPath>
+            </defs>
+          </svg>
         {/if}
       </div>
     {/each}
