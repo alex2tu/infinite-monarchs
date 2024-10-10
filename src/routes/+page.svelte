@@ -3,16 +3,25 @@
 
   type CellContent = [string, string]; // [content, colorCode]
 
-  // Generate grid data
   let grid;
-
-    // console.log(grid);
-
-// If you still want reactivity when n changes:
+  let cellVals = [" ", "X", "Q"];
+  const colors = [
+        "red",
+        "blue",
+        "green",
+        "yellow",
+        "purple",
+        "orange",
+        "pink",
+        "teal",
+        "indigo",
+        "maroon"
+    ];
+    let numQueens;
+    let currAvailableSquares;
 
   function findValidConfigurations(n) {
     //create empty chess board
-    //String in javascript is immutable, so here I use 2D array for chess board
     var chessBoard = new Array(n);
     for(var i = 0; i < n; i++) {
         chessBoard[i] = new Array(n).fill(" ");
@@ -58,21 +67,6 @@
         let randomIndex = Math.floor(Math.random() * validConfigurations.length);
         return validConfigurations[randomIndex];
     }
-
-    const colors = [
-        "red",
-        "blue",
-        "green",
-        "yellow",
-        "purple",
-        "orange",
-        "pink",
-        "teal",
-        "indigo",
-        "maroon"
-    ];
-
-    let currAvailableSquares = n * n;
 
     function setColors() {
         let currGrid = chooseConfiguration();
@@ -143,9 +137,6 @@
         }
         return false;
     }
-
-  let cellVals = [" ", "X", "Q"];
-  let numQueens = 0;
 
   function checkWin() {
     // Check if there are any queens in the same row
@@ -230,6 +221,7 @@
     let configuration = chooseConfiguration();
     setColors();
     numQueens = 0;
+    currAvailableSquares = n * n;
 
     //perform drunkard's walk on all queen squares
     for(let i = 0; i < n; i++) {
